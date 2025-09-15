@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="view_transport_extra_cost_template_tree" model="ir.ui.view">
+            <field name="name">view.transport.extra.cost.template.tree</field>
+            <field name="model">pkp.transport.extra.cost</field>
+            <field name="arch" type="xml">
+                <tree string="Extra Cost Templates" sample="1">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_transport_extra_cost_template_form" model="ir.ui.view">
+            <field name="name">view.transport.extra.cost.template.form</field>
+            <field name="model">pkp.transport.extra.cost</field>
+            <field name="arch" type="xml">
+                <form string="Extra Cost Templates">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1><field name="name" required="1"/></h1>
+                        </div>
+                        <notebook>
+                            <page string="Extra Cost">
+                                <field name="line_ids">
+                                    <tree editable="bottom">
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="product_id" domain="[('type', '=', 'service')]" optional="show"/>
+                                        <field name="name" required="1" optional="show"/>
+                                        <field name="cost_type" optional="show"/>
+                                        <field name="quantity" optional="show"/>
+                                        <field name="product_uom_id" optional="show"/>
+                                        <field name="price_unit" optional="show"/>
+                                        <field name="price_subtotal" optional="show"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="currency_id" invisible="1"/>
+                                                <field name="product_id"/>
+                                                <field name="name"/>
+                                                <field name="cost_type"/>
+                                                <field name="quantity"/>
+                                                <field name="product_uom_id"/>
+                                                <field name="price_unit"/>
+                                                <field name="price_subtotal"/>
+                                            </group>
+                                        </group>                                                                     
+                                    </form>
+                                </field>
+                                <group>
+                                    <group class="oe_subtotal_footer oe_right" colspan="2" name="extra_cost_total_amount">
+                                        <field name="extra_cost_total_amount" />
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_transport_extra_cost_template" model="ir.actions.act_window">
+            <field name="name">Extra Cost Template</field>
+            <field name="res_model">pkp.transport.extra.cost</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No extra cost templates.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="transport_extra_cost_template_menu"
+            name="Extra Cost Templates"
+            parent="pkp_transport_management.menu_transport_configuration"
+            sequence="1"
+            action="action_transport_extra_cost_template"/>
+
+    </data>
+</odoo>

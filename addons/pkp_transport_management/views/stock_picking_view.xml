@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="view_picking_form_inherit_transport_management" model="ir.ui.view">
+            <field name="name">view.picking.form.inherit.transport_management</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form" />
+            <field name="arch" type="xml">
+
+                <xpath expr="//page[@name='operations']" position="after">
+                    <page string="Transport">
+                        <group>
+                            <field name="is_transportation"/>
+                        </group>
+                        <group name="transport_detail" attrs="{'invisible': [('is_transportation','=', False)]}">
+                            <group>
+                                <field name="transporter_id"/>
+                                <field name="license_plate_id"/>
+                                <field name="delivery_place_id"/>
+                            </group>
+                            <group>
+                                <field name="shipment_id"/>
+                                <field name="shipment_detail"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+
+        <record id="view_picking_form_inherit_transport_management_status" model="ir.ui.view">
+            <field name="name">view.picking.form.inherit.transport_management.status</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.vpicktree" />
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='state']" position="before">
+                    <field name="shipment_state"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

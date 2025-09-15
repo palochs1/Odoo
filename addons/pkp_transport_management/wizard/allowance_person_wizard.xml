@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+    	<record id="view_pkp_allowance_person_wizard" model="ir.ui.view">
+            <field name="name">view.pkp.allowance.person.wizard</field>
+            <field name="model">pkp.allowance.person.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Allowance Person Wizard">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="start_date" required="1"/>
+                                <field name="end_date" required="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Employees">
+                                <field name="employee_ids">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="work_phone" class="o_force_ltr"/>
+                                        <field name="work_email"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="name"/>
+                                                <field name="work_phone" class="o_force_ltr"/>
+                                                <field name="work_email"/>
+                                            </group>
+                                         </group>                                                                     
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button name="print_report" string="Print Report" type="object" class="oe_highlight"/>
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    	<record id="action_pkp_allowance_person_wizard" model="ir.actions.act_window">
+            <field name="name">Allowance Person Wizard</field>
+            <field name="res_model">pkp.allowance.person.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_pkp_allowance_person_wizard"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_allowance_person" 
+            name="Allowance Persons" 
+            action="action_pkp_allowance_person_wizard"
+            parent="menu_transport_reporting" 
+            sequence="5"/>
+
+    </data>
+</odoo>

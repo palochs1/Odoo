@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <!-- หน้า LIFF แบบเพียว: ไม่ใช้ web.layout / website -->
+  <template id="liff_delivery_page_plain" name="LIFF Delivery (Plain)">
+    <t t-name="website_delivery_orders.liff_delivery_page_plain">
+      <html lang="th">
+        <head>
+          <meta charset="utf-8"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"/>
+          <title>Applicad</title>
+
+          <style>
+            body {
+              margin:0;
+              font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Noto Sans Thai',sans-serif;
+              background:#fff;
+              display: flex;              /* ทำให้ body ใช้ flex */
+              justify-content: center;    /* จัดตรงกลางแนวนอน */
+              align-items: center;        /* จัดตรงกลางแนวตั้ง */
+              height: 100vh;              /* เต็มหน้าจอ */
+            }
+            .container {
+              text-align: center;
+            }
+            h3 {
+              margin:16px 0 6px;
+              font-size:28px;
+              font-weight:800;
+              color:#000;
+            }
+            p {
+              margin:0;
+              color:#000;
+            }
+            .loader {
+              width: 85px;
+              height: 50px;
+              margin: 0 auto 16px;
+              --g1:conic-gradient(from 90deg at left 3px top 3px,#000 90deg,#000 0);
+              --g2:conic-gradient(from -90deg at bottom 3px right 3px,#000 90deg,#000 0);
+              background: var(--g1),var(--g1),var(--g1), var(--g2),var(--g2),var(--g2);
+              background-position: left,center,right;
+              background-repeat: no-repeat;
+              animation: l10 1s infinite alternate;
+            }
+            @keyframes l10 {
+              0%,2%   {background-size:25px 50%,25px 50%,25px 50%}
+              20%     {background-size:25px 25%,25px 50%,25px 50%}
+              40%     {background-size:25px 100%,25px 25%,25px 50%}
+              60%     {background-size:25px 50%,25px 100%,25px 25%}
+              80%     {background-size:25px 50%,25px 50%,25px 100%}
+              98%,100%{background-size:25px 50%,25px 50%,25px 50%}
+            }
+          </style>
+
+          <!-- LIFF SDK -->
+          <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+          </head>
+          <body>
+            <div class="container">
+              <div class="loader"></div>
+              <h3>กำลังโหลดจาก LINE...</h3>
+              <p>โปรดรอสักครู่</p>
+            </div>
+
+          <script>
+          (async () =&gt; {
+            
+            const LIFF_ID = "<t t-esc='liff_id or ""'/>";
+            try {
+              if (!LIFF_ID) {
+                alert("ไม่พบ LIFF ID — กรุณาตั้งค่า parameter line.liff_id_delivery");
+                return;
+              }
+              await liff.init({ liffId: LIFF_ID });
+
+              if (!liff.isLoggedIn()) {
+                liff.login({ redirectUri: window.location.href });
+                return;
+              }
+
+              const profile = await liff.getProfile();
+              const uid = profile.userId;
+
+              
+              const u = new URL(window.location.href);
+              const q = u.searchParams.get('q') || "";
+              const page = u.searchParams.get('page') || "1";
+
+              
+              const target = "/transpot/delivery-orders/" + encodeURIComponent(uid)
+                           + "?q=" + encodeURIComponent(q)
+                           + "&amp;page=" + encodeURIComponent(page);
+              window.location.replace(target);
+            } catch (err) {
+              console.error("LIFF error:", err);
+              alert("ไม่สามารถโหลดข้อมูลจาก LINE ได้ — โปรดเปิดลิงก์จากในแอป LINE และตรวจว่าโดเมนนี้ถูกเพิ่มใน LIFF แล้ว");
+            }
+          })();
+          </script>
+        </body>
+      </html>
+    </t>
+  </template>
+</odoo>

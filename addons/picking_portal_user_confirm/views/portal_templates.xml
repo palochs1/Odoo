@@ -1,0 +1,743 @@
+<odoo>
+  <template id="picking_portal_page_headless">
+    <style>
+      /* ตัว loading overlay */
+      #loadingOverlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(255,255,255,0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 60px; height: 60px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      body, html{
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'Noto Sans Thai', sans-serif;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        background-color: #FF3333;
+      }
+      body, .container {
+        font-size: 16px;    /* ขนาดมาตรฐานเว็บ */
+        line-height: 1.6;
+      }
+      .header{
+        background-color: #FF3333;
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+      }
+      .container {
+        background-color: #ffffff;  /* สีขาวด้านใน */
+        font-family: 'Noto Sans Thai', sans-serif;
+        margin: 0 auto;             /* จัดให้อยู่ตรงกลาง */
+        padding: 16px;              /* เว้นขอบด้านในกล่อง */
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+      h1{
+        color: #ffffff;
+        text-align: center;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: 30% 1fr; /* ซ้าย 30% ขวา ที่เหลือ */
+        gap: 8px 12px;
+      }
+      .info-grid .label {
+        font-weight: bold;
+        padding: 6px 0;
+      }
+      .info-grid .value {
+        padding: 6px 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .row label {
+        flex: 0 0 30%;
+        font-weight: bold;
+      }
+      .row .text {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #E3DCDC;
+        border-radius: 6px;
+        font-family: 'Noto Sans Thai', sans-serif;
+        font-size: 18px;
+        width: 100%;
+      }
+      .row .latlong {
+        flex: 1;
+        padding: 8px;
+        border: 0px;
+        border-radius: 6px;
+        font-family: 'Noto Sans Thai', sans-serif;
+        font-size: 18px;
+      }
+      input.text,
+      .cell-input {
+        font-size: 18px;
+        padding: 10px 12px;
+      }
+      .product-list {
+        font-family: 'Noto Sans Thai', sans-serif;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      .product-list li {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+        gap: 8px; /* ระยะห่างระหว่าง name กับ qty */
+      }
+      .product-list .name {
+        font-weight: 500;
+        color: #333;
+        font-size: 16px !important;
+      }
+      .product-list .qty {
+        font-weight: bold;
+        color: #555;
+        font-size: 16px !important;
+      }
+      .btn-success {
+        font-family: 'Noto Sans Thai', sans-serif;
+        background-color: #FF3333;
+        color: #fff;
+        border: none;
+        padding: 18px 24px;
+        border-radius: 5px;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        text-align: center;
+      }
+      .btn-success:hover {
+        background-color: #e62e2e;
+      }
+      .btn-success:active {
+        background-color: #cc2929;
+      }
+      .btn-reset {
+        font-family: 'Noto Sans Thai', sans-serif;
+        background-color: #6c757d;
+        color: #fff;
+        border: none;
+        padding: 18px 24px;
+        border-radius: 5px;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        text-align: center;
+      }
+      .btn-reset:hover {
+        background-color: #5a6268;
+      }
+      .btn-reset:active {
+        background-color: #545b62;
+      }
+      .btn-container {
+        width: 100%;
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        margin-top:16px;
+        align-self:center;
+        margin-left:auto;
+        margin-right:auto;
+      }
+      .btn-container button{
+        width: 100%;      /* กว้างเต็มจอ/เต็ม container */
+        box-sizing: border-box; /* กัน padding ทำให้เกินขอบ */
+      }
+      @media (max-width: 480px) {
+        body, .container {
+          font-size: 16px !important;;   /* +2px */
+        }
+        .btn-success,
+        .btn-reset {
+          font-family: 'Noto Sans Thai', sans-serif;
+          padding: 14px 22px;
+          font-size: 20px;   /* +4px */
+          border-radius: 10px;
+        }
+        input.text,
+        .cell-input {
+          font-size: 18px;
+          padding: 12px 14px;
+        }
+        .check-table thead th,
+        .check-table tbody td {
+          font-size: 18px;
+          padding: 12px 14px;
+        }
+      }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <div style="max-width:100%; width:100%; margin:16px auto;">
+      <div class="header"><h1>ยืนยันการรับของ</h1></div>
+
+      <t t-if="picking">
+        <div class="container" style="border:1px solid #ddd;padding:16px">
+            <div class="info-grid">
+              <div class="label">เลขที่ใบส่งของ</div>
+              <div class="value"><t t-esc="picking.name"/></div>
+
+              <div class="label">ลูกค้า</div>
+              <div class="value"><t t-esc="picking.partner_id and picking.partner_id.display_name or '-'"/></div>
+
+              <div class="label">ที่อยู่จัดส่ง</div>
+              <div class="value"><t t-esc="picking.partner_id and picking.partner_id.contact_address or '-'"/></div>
+
+              <div class="label">สถานะ</div>
+              <div class="value"><t t-esc="picking.state"/></div>
+
+              <t t-if="picking.move_ids_without_package">
+                <div class="label">รายการสินค้า</div>
+                <div class="value">
+                  <ul class="product-list">
+                    <t t-foreach="picking.move_ids_without_package" t-as="m">
+                      <li>
+                        <span class="name"><t t-esc="m.product_id.display_name"/></span>
+                        <span class="qty"><t t-esc="m.product_uom_qty"/> <t t-esc="m.product_uom.name"/></span>
+                      </li>
+                    </t>
+                  </ul>
+                </div>
+              </t>
+            </div>
+
+          <div id="loadingOverlay">
+            <div class="spinner"></div>
+          </div>
+
+
+          <t t-if="not picking.portal_confirmed">
+            <form method="post" action="/picking/user/confirm/submit" id="picking-form" style="margin-top:12px" enctype="multipart/form-data">
+              <input type="hidden" name="picking_id" t-att-value="picking.id"/>
+              <input type="hidden" name="token" t-att-value="token"/>
+
+              <div class="row">
+                <label>ชื่อผู้รับ</label><br/>
+                <input class="text" type="text" name="customer_name"/>
+              </div>
+              <div class="row">
+                <label>บันทึกเพิ่มเติม</label><br/>
+                <input class="text" type="text" name="note"/>
+              </div>
+              <div class="row">
+                <label>Latitude</label><br/>
+                <i class="fa-solid fa-location-dot"></i>
+                <input class="latlong" type="text" name="latitude" id="latitude" readonly="readonly"/>
+              </div>
+              <div class="row">
+                <label>Longitude</label><br/>
+                <i class="fa-solid fa-location-dot"></i>
+                <input class="latlong" type="text" name="longitude" id="longitude" readonly="readonly"  />
+              </div>
+              <div class="row">
+                <label>แนบรูปภาพ (optional)</label><br/>
+                <input class="text" type="file" name="check_image" accept="image/*" id="check_image"/>
+              </div>
+              <div id="preview_container" style="position:relative; display:none; max-width:100%; margin-top:8px; width:fit-content;">
+                <img id="check_image_preview"
+                     style="width:100px; height:100px; border-radius:8px; border:1px solid #ddd; display:block; cursor:pointer;"/>
+                <span id="remove_image_btn"
+                      style="display:none; position:absolute; top:6px; right:6px;
+                             background:#FF3333; color:#fff; border-radius:50%;
+                             width:24px; height:24px; align-items:center; justify-content:center;
+                             cursor:pointer; font-weight:bold; font-size:16px; text-align:center; line-height:24px;">
+                  ×
+                </span>
+              </div>
+
+              <div id="image_popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                   background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+                <span id="popup_close" style="position:absolute; top:16px; right:24px; color:#fff;
+                      font-size:32px; cursor:pointer;">&#215;</span>
+                <img id="popup_image" style="max-width:90%; max-height:90%; border-radius:8px;"/>
+              </div>
+              <div style="margin-bottom:8px" t-if="stock_moves">
+
+                <style>
+                  .check-table thead th,
+                  .check-table tbody td {
+                    font-size: 18px;
+                    padding: 10px 12px;
+                  }
+                  .table-scroll{ overflow-x:auto; }
+                  .check-wrap{
+                    border:1px solid #e6e6e6; border-radius:10px; overflow:hidden; margin-top:12px;
+                  }
+                  table.check-table{
+                    width:100%;
+                    border-collapse:collapse;
+                    border-spacing:0;
+                    background:#fff;
+                  }
+
+                  .check-table thead th{
+                    background: #FF3333;
+                    color: #fff;
+                    font-weight: 700;
+                    text-align:center;
+                    padding: 10px 12px;
+                    border: 1px solid #ddd;
+                  }
+                  .check-table tbody td{
+                    padding:10px 12px;
+                    border:1px solid #ddd;
+                    vertical-align:middle;
+                  }
+
+                  .check-table th.num,     .check-table td.num     { text-align:center; width:60px; }
+                  .check-table th.product { text-align:left; width:100; }
+                  .check-table td.product { text-align:left; width:100; }
+                  .check-table th.qty,     .check-table td.qty     { text-align:center; width:60px; }
+                  .check-table th.input-cell, .check-table td.input-cell { text-align:center; width:100px; }
+
+                  .cell-input{
+                    width:100%; box-sizing:border-box; padding:8px 10px; font-size:18px;
+                    border:1px solid #d9d9d9; border-radius:8px;
+                    transition:border-color .15s, box-shadow .15s, background .15s;
+                  }
+                  .cell-input:focus{
+                    outline:none; border-color:#ff4d4f; box-shadow:0 0 0 3px rgba(255,77,79,.12); background:#fff;
+                  }
+                  .cell-input.equal{ border-color:#28a745; }
+                  .cell-input.diff { border-color:#ff9a00; background:#fff7e6; }
+
+                  .check-table thead th:first-child{border-top-left-radius:10px;}
+                  .check-table thead th:last-child{border-top-right-radius:10px;}
+                  .check-table tbody tr:last-child td:first-child{border-bottom-left-radius:10px;}
+                  .check-table tbody tr:last-child td:last-child{border-bottom-right-radius:10px;}
+                </style>
+
+                <div class="table-scroll">
+                  <div class="check-wrap">
+                    <table class="check-table">
+                      <thead>
+                        <tr>
+                          <th class="num">No.</th>
+                          <th class="product">Product</th>
+                          <th class="qty">จำนวน</th>
+                          <th class="input-cell">Checklist</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <t t-set="count_row" t-value="0"/>
+                        <t t-foreach="stock_moves" t-as="stock_move">
+                          <t t-set="count_row" t-value="count_row+1"/>
+                          <tr>
+                            <td class="num"><t t-esc="str(count_row)"/></td>
+                            <td class="product"><t t-esc="stock_move.product_id.name"/></td>
+                            <td class="qty"><t t-esc="stock_move.product_uom_qty"/></td>
+                            <td class="input-cell">
+                              <input type="hidden" name="move_id[]" t-att-value="stock_move.id"/>
+                              <input class="cell-input"
+                                     type="number" name="move_qty[]"
+                                     t-att-min="0"
+                                     t-att-max="stock_move.product_uom_qty"
+                                     t-att-value="stock_move.product_uom_qty"
+                                     t-att-data-original="stock_move.product_uom_qty"/>
+                            </td>
+                          </tr>
+                        </t>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="btn-container">
+                <button type="submit" class="btn-success" style="padding:8px 14px" onclick="getLocationAndSubmit(event)">ยืนยันรับของ</button>
+                <button type="button" class="btn-reset" style="padding:8px 14px" onclick="resetMoveQty()">รีเซ็ตค่า</button>
+              </div>
+            </form>
+            <script>
+              function showOverlay(on){
+                document.getElementById('loadingOverlay').style.display = on ? 'flex' : 'none';
+              }
+
+              window.onload = function() {
+                // เริ่มต้นค่อยโชว์ overlay ตอนจะขอพิกัด
+                showOverlay(true);
+                getLocation(new Event("load"));
+              };
+
+              function getLocation(event) {
+                event.preventDefault();
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(function(pos) {
+                    document.getElementById('latitude').value = pos.coords.latitude;
+                    document.getElementById('longitude').value = pos.coords.longitude;
+                    showOverlay(false); // ✅ ซ่อนเมื่อสำเร็จ
+                  }, function() {
+                    alert('ไม่สามารถดึงตำแหน่งได้');
+                    showOverlay(false); // ✅ ซ่อนเมื่อผิดพลาดด้วย
+                  }, { enableHighAccuracy:true, timeout:7000, maximumAge:0 });
+                } else {
+                  alert("อุปกรณ์ไม่รองรับการระบุตำแหน่ง");
+                  showOverlay(false); // ✅ ซ่อน
+                }
+              }
+
+              function getLocationAndSubmit(event) {
+                event.preventDefault();
+                showOverlay(true);
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(function(pos) {
+                    document.getElementById('latitude').value = pos.coords.latitude;
+                    document.getElementById('longitude').value = pos.coords.longitude;
+                    showOverlay(false);
+                    document.getElementById('picking-form').submit();
+                  }, function() {
+                    alert('ไม่สามารถดึงตำแหน่งได้');
+                    showOverlay(false);
+
+                  }, { enableHighAccuracy:true, timeout:7000, maximumAge:0 });
+                } else {
+                  alert("อุปกรณ์ไม่รองรับการระบุตำแหน่ง");
+                  showOverlay(false);
+
+                }
+              }
+              (function(){
+                const fileInput = document.getElementById('check_image');
+                const img = document.getElementById('check_image_preview');
+                const removeBtn = document.getElementById('remove_image_btn');
+                const container = document.getElementById('preview_container');
+                const popup = document.getElementById('image_popup');
+                const popupImg = document.getElementById('popup_image');
+                const popupClose = document.getElementById('popup_close');
+
+                // เมื่อคลิกที่รูปเล็ก
+                img.addEventListener('click', function () {
+                  popup.style.display = 'flex'; // แสดง popup
+                  popupImg.src = this.src; // เอารูปไปแสดงใน popup
+                });
+
+                // ปิด popup
+                popupClose.addEventListener('click', function () {
+                  popup.style.display = 'none';
+                });
+
+
+                popup.addEventListener('click', function (e) {
+                  if (e.target === popup) {
+                    popup.style.display = 'none';
+                  }
+                });
+
+                if (!fileInput) return;
+
+                // แสดงรูปเมื่อเลือกไฟล์
+                fileInput.addEventListener('change', function(e){
+                  const file = e.target.files &amp;&amp; e.target.files[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = function(ev){
+                    img.src = ev.target.result;
+                    container.style.display = 'inline-block';
+                    removeBtn.style.display = 'flex'; // ค่อยโชว์กากบาทตอนมีรูป
+                  };
+                  reader.readAsDataURL(file);
+                });
+
+                // ลบรูป
+                removeBtn.addEventListener('click', function(){
+                  fileInput.value = "";
+                  img.src = "";
+                  container.style.display = 'none';
+                  removeBtn.style.display = 'none';
+                });
+              })();
+              function resetMoveQty() {
+                document.querySelectorAll('input[name="move_qty[]"]').forEach(function (inp) {
+                  const orig = inp.getAttribute('data-original');
+                  if (orig !== null) {
+                    inp.value = orig;
+                  }
+                });
+                const customerName = document.querySelector('input[name="customer_name"]');
+                if (customerName) {
+                  customerName.value = '';
+                }
+
+                const note = document.querySelector('input[name="note"]');
+                if (note) {
+                  note.value = '';
+                }
+
+                const fileInput = document.querySelector('input[name="check_image"]');
+                if (fileInput) {
+                  fileInput.value = '';
+
+                  // ซ่อน preview ถ้ามี
+                  const preview = document.getElementById('check_image_preview');
+                  if (preview) {
+                    preview.src = '';
+                    preview.style.display = 'none';
+                  }
+
+                  const remove_button = document.getElementById('remove_image_btn');
+                  if (remove_button){
+                    remove_button.style.display = 'none';
+                  }
+                }
+              }
+              (function(){
+                function mark(inp){
+                  const orig = Number(inp.getAttribute('data-original'));
+                  const val  = Number(inp.value);
+                  inp.classList.remove('equal','diff');
+                  if (inp.value === '') return;
+                  (val === orig) ? inp.classList.add('equal') : inp.classList.add('diff');
+                }
+                document.querySelectorAll('.cell-input').forEach(inp=>{
+                  mark(inp);
+                  inp.addEventListener('input', ()=>mark(inp));
+                  inp.addEventListener('blur',  ()=>mark(inp));
+                });
+              })();
+            </script>
+
+          </t>
+          <t t-else="">
+            <div style="margin-top:12px;color:green">
+              <span>ลูกค้ายืนยันรับของแล้วเมื่อ </span>
+              <!-- ให้ QWeb แสดงค่า UTC ดิบตามเดิม -->
+              <span id="confirmed-at-utc">
+                <t t-esc="picking.portal_confirmed_datetime or ''"/>
+              </span>
+            </div>
+
+            <script>
+                (function () {
+                  try {
+                    var el = document.getElementById('confirmed-at-utc');
+                    if (!el) return;
+
+                    var raw = (el.textContent || '').trim();
+                    if (!raw) { el.textContent = '-'; return; }
+
+                    var iso = raw.replace(' ', 'T');
+                    if (!/(Z|[+-]\d{2}:?\d{2})$/.test(iso)) {
+                      iso += 'Z';
+                    }
+
+                    var d = new Date(iso);
+                    if (isNaN(d.getTime())) {
+                      return;
+                    }
+
+                    var pad = function (n) { return (n &lt; 10 ? '0' : '') + n; };
+                    var text = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear()
+                             + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+
+                    el.textContent = text;
+                  } catch (e) {
+                    // ignore
+                  }
+                })();
+            </script>
+          </t>
+        </div>
+      </t>
+    </div>
+  </template>
+
+
+  <template id="user_portal_page_headless">
+    <style>
+    /* ตัว loading overlay */
+    #loadingOverlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px; height: 60px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    body {
+<!--      background: #f6f7f9;-->
+      font-family: 'Noto Sans Thai', Arial, sans-serif;
+      background: #fafbfc;
+<!--      min-height: 100vh;-->
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .page-wrap {
+      width: 100%;
+      max-width: 500px;
+      margin: 24px auto;
+      padding: 0 16px;
+      font-family: 'Noto Sans Thai', Arial, sans-serif;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 48px 40px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 8px 16px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+    .title {
+      text-align:center; color:#cf2e2e; font-weight:800;
+      font-size: 40px; line-height:1.15; margin: 8px 0 24px;
+      letter-spacing:.5px;
+    }
+    .field { margin-bottom: 18px; }
+    .label {
+      display:block; margin-bottom:8px; color:#303338; font-weight:700; font-size:14px;
+      letter-spacing:.4px;
+    }
+    .input, .select {
+      font-family: 'Noto Sans Thai', Arial, sans-serif;
+      width: 100%;
+      height:50px;
+      padding: 14px 16px;
+      border:1px solid #d9d9d9;
+      border-radius:12px;
+      font-size:18px;
+      background:#fff;
+      color:#1f2328;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .select { appearance:none; background-image: linear-gradient(45deg, transparent 50%, #9aa0a6 50%), linear-gradient(135deg, #9aa0a6 50%, transparent 50%), linear-gradient(to right, #fff, #fff);
+             background-position: calc(100% - 22px) 24px, calc(100% - 16px) 24px, 100% 0;
+             background-size: 6px 6px, 6px 6px, 2.5em 56px; background-repeat:no-repeat; }
+    .input:focus, .select:focus {
+      outline:none; border-color:#ff4d4f; box-shadow:0 0 0 3px rgba(255,77,79,.15);
+    }
+    .actions { margin-top: 8px; display:flex; justify-content:center; }
+    .btn-primary {
+      width:100%; max-width: 420px;
+      border:none; border-radius:14px; padding:16px 20px;
+      background:#d52b2b; color:#fff; font-weight:800; font-size:20px;
+      letter-spacing:.3px; cursor:pointer; transition:background .15s, transform .02s;
+    }
+    .btn-primary:hover { background:#c22424; }
+    .btn-primary:active { transform: translateY(1px); }
+
+    /* Responsive */
+    @media (max-width: 768px){
+      .title { font-size: 36px; }
+      .input, .select { height:58px; font-size:18px; }
+      .btn-primary { font-size:20px; padding:18px 22px; }
+    }
+  </style>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+     <div class="page-wrap">
+      <div class="card">
+        <div class="title">ลงทะเบียน</div>
+
+        <t t-if="users">
+          <form method="post" action="/user/confirm/submit" id="picking-form">
+            <div class="field">
+              <label class="label">ตัวเลือก</label>
+                <select name="user_id" class="select">
+                    <t t-foreach="users" t-as="user">
+                      <option t-att-value="user.id" >
+                        <t t-esc="user.display_name"/>
+                      </option>
+                    </t>
+                  </select>
+            </div>
+
+            <div class="field">
+              <label class="label">Type</label>
+              <select name="type_users" class="select">
+                <option value="">-- เลือกประเภท --</option>
+                <option value="project">Project User</option>
+                <option value="transport">Transport User</option>
+              </select>
+            </div>
+
+
+            <!-- USER ID -->
+            <div class="field">
+              <label class="label">USER ID</label>
+              <input type="text" name="line_uid" id="line_uid" class="input" readonly="readonly"/>
+            </div>
+
+            <!-- ปุ่ม -->
+            <div class="actions">
+              <button type="submit" class="btn-primary">ลงทะเบียน</button>
+            </div>
+          </form>
+
+          <script>
+            const liffId = "2006632316-5n2aXpBm"
+
+             window.onload = async function() {
+                try {
+                  await liff.init({ liffId });
+
+                  if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                  }
+
+                  const profile = await liff.getProfile();
+                  document.getElementById("line_uid").value = profile.userId;
+
+                } catch (err) {
+                  console.error("เกิดข้อผิดพลาดในการโหลด LIFF:", err);
+                  alert("ไม่สามารถโหลดข้อมูลจาก LINE ได้");
+                }
+              };
+          </script>
+        </t>
+      </div>
+    </div>
+  </template>
+</odoo>

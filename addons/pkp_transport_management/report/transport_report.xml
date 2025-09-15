@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="report_transport">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+
+                    <t t-call="web.basic_layout">
+                        <div class="page" style="font-size: 12px;">
+                            <!-- Table Header -->
+                            <div class="row">
+                                <div class="col-3 text-center" style="font-size: 20px;">
+                                    <strong><span>ใบจัดส่งสินค้า</span></strong>
+                                </div>
+                                <div class="col-3 text-center" style="font-size: 20px;">
+                                    <t t-if="doc.license_plate_id">
+                                        <strong><span>เลขที่เอกสาร </span><span t-esc="doc.name"/></strong>
+                                    </t>
+                                </div>
+                                <div class="col-3 text-center" style="font-size: 20px;">
+                                    <t t-if="doc.license_plate_id">
+                                        <strong><span>ทะเบียนรถ </span><span t-esc="doc.license_plate_id.license_plate"/></strong>
+                                    </t>
+                                </div>
+                                <div class="col-3 text-center" style="font-size: 20px;">
+                                    <strong><span>วันที่ </span><span t-esc="func_date_format(doc.delivery_date.date())"/></strong>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-left">
+                                    <strong><span>1. รายการสั่งสินค้า</span></strong>
+                                </div>
+                            </div>
+                            <table class="table table-sm table-bordered" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th name="th_no" class="text-center" style="width:2%;"></th>
+                                        <th name="th_bill" class="text-center" style="width:10%;"><span>เลขที่บิล</span></th>
+                                        <th name="th_name" class="text-center" style="width:48%;"><span>ชื่อลูกค้า</span></th>
+                                        <th name="th_quantity" class="text-center" style="width:5%;"><span>ลูก</span></th>
+                                        <th name="th_weight" class="text-center" style="width:5%;"><span>นน.กก.</span></th>
+                                        <th name="th_location" class="text-center" style="width:20%;"><span>สถานที่ส่ง</span></th>
+                                        <th name="th_remark" class="text-center" style="width:10%;"><span>หมายเหตุ</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="no" t-value="1"/>
+                                    <t t-set="total_done_qty" t-value="0"/>
+                                    <t t-set="total_secondary_qty" t-value="0"/>
+                                    <t t-foreach="doc.picking_ids" t-as="line">
+                                        <tr>
+                                            <td class="text-center" ><t t-esc="no"/></td>
+                                            <t t-set="invoice_id" t-value="func_get_invoice(line.picking_id)"/>
+                                            <td class="text-left">
+                                                <t t-if="invoice_id">
+                                                    <t t-esc="invoice_id.invoice_name"/>
+                                                    <!-- <t t-esc="invoice_id.name"/> -->
+                                                </t>
+                                            </td>
+                                            <td class="text-left"><t t-esc="line.partner_id.name"/></td>
+                                            <td class="text-right">
+                                                <t t-set="secondary_qty" t-value="func_get_invoice_secondary_quantity(line.picking_id)"/>
+                                                <t t-esc="'{0:,.2f}'.format(secondary_qty).split('.')[0]"/>
+                                                <t t-set="total_secondary_qty" t-value="total_secondary_qty + secondary_qty"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-set="done_qty" t-value="func_get_invoice_quantity(line.picking_id)"/>
+                                                <t t-esc="'{0:,.2f}'.format(done_qty)"/>
+                                                <t t-set="total_done_qty" t-value="total_done_qty + done_qty"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <t t-if="line.delivery_place_id">
+                                                    <t t-esc="line.delivery_place_id.name"/>
+                                                </t>
+                                            </td>
+                                            <td class="text-left"><t t-esc="line.remark"/></td>
+                                            <t t-set="no" t-value="no + 1"/>
+                                        </tr>
+                                    </t>
+                                    <!-- Add blank lines -->
+                                    <t t-set="sum_picking_lines" t-value="14 - len(doc.picking_ids)"/>
+                                    <t t-if="sum_picking_lines > 0">
+                                        <t t-foreach="sum_picking_lines" t-as="line">
+                                            <tr>
+                                                <td class="text-center" ><t t-esc="no"/></td>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <t t-set="no" t-value="no + 1"/>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <!-- Total line -->
+                                    <tr>
+                                        <td colspan="2"/>
+                                        <td class="text-center"><span>รวมรายการ</span></td>
+                                        <td class="text-right"><span t-esc="'{0:,.2f}'.format(total_secondary_qty).split('.')[0]"/></td>
+                                        <td class="text-right"><span t-esc="'{0:,.2f}'.format(total_done_qty)"/></td>
+                                        <td colspan="2"/>
+                                    </tr>
+                                    <!-- Remark line -->
+                                    <tr>
+                                        <td class="text-center" ><span>หมายเหตุ</span></td>
+                                        <td class="text-left" colspan="7"><span t-esc="doc.remark"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+
+                            <div class="row">
+                                <div class="col-12 text-left">
+                                    <strong><span>2. บิลเก็บลูกค้า</span></strong>
+                                </div>
+                            </div>
+                            <table class="table table-sm table-bordered" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th name="th_no" class="text-center" style="width:2%;"></th>
+                                        <th name="th_bill" class="text-center" style="width:10%;"><span>เลขที่บิล</span></th>
+                                        <th name="th_name" class="text-center" style="width:48%;"><span>ชื่อลูกค้า</span></th>
+                                        <th name="th_date" class="text-center" style="width:10%;"><span>วันที่บิล</span></th>
+                                        <th name="th_amount" class="text-center" style="width:20%;"><span>จำนวนเงิน</span></th>
+                                        <th name="th_remark" class="text-center" style="width:10%;"><span>หมายเหตุ</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="no" t-value="1"/>
+                                    <t t-foreach="doc.invoice_ids" t-as="line">
+                                        <tr>
+                                            <td class="text-center"><t t-esc="no"/></td>
+                                            <td class="text-left"><t t-esc="line.invoice_name"/></td>
+                                            <td class="text-left"><t t-esc="line.partner_id.name"/></td>
+                                            <td class="text-center"><t t-esc="func_date_format(line.invoice_date)"/></td>
+                                            <td class="text-right"><t t-esc="'{0:,.2f}'.format(line.amount_total_signed)"/></td>
+                                            <td/>
+                                            <t t-set="no" t-value="no + 1"/>
+                                        </tr>
+                                    </t>
+                                    <!-- Add blank lines -->
+                                    <t t-set="sum_invoice_lines" t-value="5 - len(doc.invoice_ids)"/>
+                                    <t t-if="sum_invoice_lines > 0">
+                                        <t t-foreach="sum_invoice_lines" t-as="line">
+                                            <tr>
+                                                <td class="text-center"><t t-esc="no"/></td>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <t t-set="no" t-value="no + 1"/>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <br/>
+
+                            <div class="row">
+                                <div class="col-12 text-left">
+                                    <strong><span>3. การจัดส่ง</span></strong>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>คนขับ1.___________2.___________3.___________</span>
+                                </div>
+                                <div class="col-6">
+                                    <span>เด็กรถ______________________________________</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>เลขไมล์ออก____________เลขไมล์เข้า____________</span>
+                                </div>
+                                <div class="col-6">
+                                    <span>เวลาเข้า_________เวลาออก_________OT________</span>
+                                </div>
+                            </div>
+                            <br/>
+
+                            <t t-set="total_shipping_amount" t-value="sum(doc.extra_cost_ids.filtered(lambda x:x.cost_type == 'shipping').mapped('price_subtotal'))"/>
+                            <t t-set="total_allowance_amount" t-value="sum(doc.employee_cost_ids.mapped('allowance_amount'))"/>
+                            <t t-set="total_parking_amount" t-value="sum(doc.extra_cost_ids.filtered(lambda x:x.cost_type == 'parking').mapped('price_subtotal'))"/>
+                            <t t-set="total_additional_amount" t-value="sum(doc.employee_cost_ids.mapped('additional_amount'))"/>
+                            <t t-set="total_expressway_amount" t-value="sum(doc.extra_cost_ids.filtered(lambda x:x.cost_type == 'expressway').mapped('price_subtotal'))"/>
+                            <t t-set="total_transport_amount" t-value="sum(doc.employee_cost_ids.mapped('transport_amount'))"/>
+                            <t t-set="total_phone_amount" t-value="sum(doc.extra_cost_ids.filtered(lambda x:x.cost_type == 'phone').mapped('price_subtotal'))"/>
+
+                            <!-- Backup 29/09/2024 -->
+                            <!-- <table style="width: 100%;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:15%;">ค่าขนส่ง</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="total_shipping_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_shipping_amount)"/></t>
+                                        </td>
+                                        <td style="width:15%;">ค่าจอดรถ</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="total_parking_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_parking_amount)"/></t>
+                                        </td>
+                                        <td style="width:15%;">ค่าทางด่วน</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="total_expressway_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_expressway_amount)"/></t>
+                                        </td>
+                                        <td style="width:15%;">ค่าโทรศัพท์</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="total_phone_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_phone_amount)"/></t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:15%;">ค่าเบี้ยเลี้ยง</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="total_allowance_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_allowance_amount)"/></t>
+                                        </td>
+                                        <td style="width:15%;">ค่าเบี้ยเลี้ยงพิเศษ</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="total_additional_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_additional_amount)"/></t>
+                                        </td>
+                                        <td style="width:15%;">ค่าเที่ยวพิเศษ</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="total_transport_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_transport_amount)"/></t>
+                                        </td>
+                                        <td style="width:15%;">รวม</td>
+                                        <td style="width:10%; border-bottom: 1px solid;">
+                                            <t t-if="doc.employee_cost_total_amount > 0.0"><span t-esc="'{0:,.2f}'.format(doc.employee_cost_total_amount)"/></t>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table> -->
+
+                            <div class="row">
+                                <div class="col-2">
+                                    <span>ค่าขนส่ง</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="total_shipping_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_shipping_amount)"/></t>
+                                </div>
+                                <div class="col-2">
+                                    <span>ค่าจอดรถ</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="total_parking_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_parking_amount)"/></t>
+                                </div>
+                                <div class="col-2">
+                                    <span>ค่าทางด่วน</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="total_expressway_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_expressway_amount)"/></t>
+                                </div>
+                                <div class="col-2">
+                                    <span>ค่าโทรศัพท์</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="total_phone_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_phone_amount)"/></t>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2">
+                                    <span>เบี้ยเลี้ยง</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="total_allowance_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_allowance_amount)"/></t>
+                                </div>
+                                <div class="col-2">
+                                    <span>ค่าเบี้ยเลี้ยงพิเศษ</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="total_additional_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_additional_amount)"/></t>
+                                </div>
+                                <div class="col-2">
+                                    <span>ค่าเที่ยวพิเศษ</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="total_transport_amount > 0.0"><span t-esc="'{0:,.2f}'.format(total_transport_amount)"/></t>
+                                </div>
+                                <div class="col-2">
+                                    <span>รวม</span>
+                                </div>
+                                <div class="col-1" style="border-bottom: 1px solid;">
+                                    <t t-if="doc.employee_cost_total_amount > 0.0"><span t-esc="'{0:,.2f}'.format(doc.employee_cost_total_amount)"/></t>
+                                </div>
+                            </div>
+                            <br/>
+
+                            <div class="row">
+                                <div class="col-12 text-left">
+                                    <strong><span>4. ตรวจสอบ</span></strong>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <span>น้ำหนักรวม รถเบา________________</span>
+                                </div>
+                                <div class="col-4">
+                                    <span>รถหนัก________________</span>
+                                </div>
+                                <div class="col-4">
+                                    <span>น้ำหนักสินค้า________________</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6" style="display: -webkit-box; -webkit-box-pack: left;">
+                                    <div style="width: 25px; height: 25px; border: 1px solid;"></div>
+                                    <span style="margin-left: 10px;">OK ตรงตามมาตรฐาน (+-10kg.)</span>
+                                </div>
+                                <div class="col-6" style="display: -webkit-box; -webkit-box-pack: left;">
+                                    <div style="width: 25px; height: 25px; border: 1px solid;"></div>
+                                    <span style="margin-left: 10px;">NG ไม่ได้มาตรฐาน_____________________________</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <span>คนชั่งน้ำหนัก________________</span>
+                                </div>
+                                <div class="col-4"/>
+                                <div class="col-4"/>
+                            </div>
+                            <br/>
+
+                            <div class="row">
+                                <div class="col-12 text-left">
+                                    <strong><span>5. รายการลูกค้าคืนสินค้า</span></strong>
+                                </div>
+                            </div>
+                            <table class="table table-sm table-bordered" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th name="th_no" class="text-center" style="width:4%;"><span>ลำดับ</span></th>
+                                        <th name="th_name" class="text-center" style="width:24%;"><span>ชื่อลูกค้า</span></th>
+                                        <th name="th_product" class="text-center" style="width:24%;"><span>รายการสินค้า</span></th>
+                                        <th name="th_quantity" class="text-center" style="width:24%;"><span>จำนวน</span></th>
+                                        <th name="th_remark" class="text-center" style="width:24%;"><span>สาเหตุที่คืน</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="no" t-value="1"/>
+                                    <t t-set="total_lines" t-value="3"/>
+                                    <t t-foreach="total_lines" t-as="line">
+                                        <tr>
+                                            <td class="text-center"><t t-esc="no"/></td>
+                                            <td/>
+                                            <td/>
+                                            <td/>
+                                            <td/>
+                                            <t t-set="no" t-value="no + 1"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+
+                    <!-- Page 2 -->
+                    <!-- <t t-call="pkp_transport_management.report_transport_attachment" t-lang="doc.company_id.partner_id.lang"/> -->
+                </t>
+            </t>
+        </template>
+
+        <template id="report_transport_attachment">
+            <t t-call="web.basic_layout">
+                <div class="page" style="font-size: 12px;">
+
+                    <div class="row">
+                        <div class="col-12 text-left">
+                            <strong><span>4. รายการลูกค้าคืนสินค้า</span></strong>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-bordered" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th name="th_no" class="text-center" style="width:4%;"><span>ลำดับ</span></th>
+                                <th name="th_name" class="text-center" style="width:24%;"><span>ชื่อลูกค้า</span></th>
+                                <th name="th_product" class="text-center" style="width:24%;"><span>รายการสินค้า</span></th>
+                                <th name="th_quantity" class="text-center" style="width:24%;"><span>จำนวน</span></th>
+                                <th name="th_remark" class="text-center" style="width:24%;"><span>สาเหตุที่คืน</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="no" t-value="1"/>
+                            <t t-set="total_lines" t-value="3"/>
+                            <t t-foreach="total_lines" t-as="line">
+                                <tr>
+                                    <td class="text-center"><t t-esc="no"/></td>
+                                    <td/>
+                                    <td/>
+                                    <td/>
+                                    <td/>
+                                    <t t-set="no" t-value="no + 1"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <div class="row">
+                        <div class="col-12 text-left">
+                            <strong><span>5. ตรวจสอบ</span></strong>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <span>น้ำหนักรวม รถเบา________________</span>
+                        </div>
+                        <div class="col-4">
+                            <span>รถหนัก________________</span>
+                        </div>
+                        <div class="col-4">
+                            <span>น้ำหนักสินค้า________________</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6" style="display: -webkit-box; -webkit-box-pack: left;">
+                            <div style="width: 25px; height: 25px; border: 1px solid;"></div>
+                            <span style="margin-left: 10px;">OK ตรงตามมาตรฐาน (+-10kg.)</span>
+                        </div>
+                        <div class="col-6" style="display: -webkit-box; -webkit-box-pack: left;">
+                            <div style="width: 25px; height: 25px; border: 1px solid;"></div>
+                            <span style="margin-left: 10px;">NG ไม่ได้มาตรฐาน_____________________________</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <span>คนชั่งน้ำหนัก________________</span>
+                        </div>
+                        <div class="col-4"/>
+                        <div class="col-4"/>
+                    </div>
+                </div>
+            </t>
+        </template>
+
+        <record id="action_transport_report" model="ir.actions.report">
+            <field name="name">ใบจัดส่งสินค้า (Transport Report - PKP)</field>
+            <field name="model">pkp.transport.shipment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">pkp_transport_management.report_transport</field>
+            <field name="report_file">pkp_transport_management.report_transport</field>
+            <field name="print_report_name">(object._get_transport_report_base_filename())</field>
+            <field name="binding_model_id" ref="pkp_transport_management.model_pkp_transport_shipment"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="pkp_transport_management.paperformat_pkp_transport_report"/>
+        </record>
+
+    </data>
+</odoo>

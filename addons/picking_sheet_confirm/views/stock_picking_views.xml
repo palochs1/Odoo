@@ -1,0 +1,23 @@
+<odoo>
+  <record id="view_picking_form_inherit_sheet" model="ir.ui.view">
+    <field name="name">stock.picking.form.sheet</field>
+    <field name="model">stock.picking</field>
+    <field name="inherit_id" ref="stock.view_picking_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//form/sheet/notebook" position="inside">
+        <page string="Confirm Order">
+          <group>
+            <field name="order_success" attrs="{'readonly': [('state' , '=', 'done')]}"/>
+            <field name="order_failed" attrs="{'readonly': [('state' , '=', 'done')]}"/>
+            <field name="note_failed" attrs="{'readonly': [('state', '=', 'done')]}"/>
+            <field name="date_confirmed" attrs="{'readonly': [('state' , '=', 'done')]}"/>
+            <field name="latitude" attrs="{'readonly': [('state' , '=', 'done')]}"/>
+            <field name="longitude" attrs="{'readonly': [('state' , '=', 'done')]}"/>
+
+            <field name="check_image" widget="image" invisible="0"/>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+</odoo>

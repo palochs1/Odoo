@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="report_allowance_delivery">
+            <t t-call="web.html_container">
+                <t t-call="web.basic_layout">
+                    <div class="header">
+                        <div class="text-center">
+                            <t t-set="header_font_color" t-value="'color: %s;' % company.primary_color"/>
+                            <h5><span t-att-style="header_font_color"/>ค่าเบี้ยเลี้ยงส่งสินค้า</h5>
+                        </div>
+                        <div class="text-left">
+                            <span>วันที่ </span><span t-esc="date"/>
+                        </div>
+                    </div>
+                    <div class="page" style="font-size: 12px;">
+                        <table class="table table-sm table-bordered" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th name="th_shipment_name" class="text-center" style="width:10%;"><span>หมายเลขจัดส่ง</span></th>
+                                    <th name="th_license_plate" class="text-center" style="width:15%;"><span>ทะเบียนรถ</span></th>
+                                    <th name="th_employee" class="text-center" style="width:35%;"><span>พนักงาน</span></th>
+                                    <th name="th_total_allowance_amount" class="text-center" style="width:10%;"><span>ค่าเบี้ยเลี้ยง</span></th>
+                                    <th name="th_total_additional_amount" class="text-center" style="width:10%;"><span>ค่าเบี้ยเลี้ยงพิเศษ</span></th>
+                                    <th name="th_total_transport_amount" class="text-center" style="width:10%;"><span>ค่าเที่ยวพิเศษ</span></th>
+                                    <th name="th_total_amount" class="text-center" style="width:10%;"><span>รวม</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="lines" t-value="func_license_plate_group_by(docs)"/>
+                                <t t-foreach="lines" t-as="line">
+                                    <tr style="background-color: #e9ecef;">
+                                        <td class="text-left"><span t-esc="line['name']"/></td>
+                                        <td class="text-left"><span t-esc="line['license_plate']"/></td>
+                                        <td class="text-center" />
+                                        <td class="text-right"><span t-esc="'{0:,.2f}'.format(line['total_allowance_amount'])"/></td>
+                                        <td class="text-right"><span t-esc="'{0:,.2f}'.format(line['total_additional_amount'])"/></td>
+                                        <td class="text-right"><span t-esc="'{0:,.2f}'.format(line['total_transport_amount'])"/></td>
+                                        <td class="text-right"><span t-esc="'{0:,.2f}'.format(line['total_amount'])"/></td>
+                                    </tr>
+                                    <t t-foreach="line['employee_cost_lines']" t-as="cost_line">
+                                        <tr>
+                                            <td class="text-center"/>
+                                            <td class="text-center"/>
+                                            <td class="text-left"><span t-esc="cost_line['employee_name']"/></td>
+                                            <td class="text-right"><span t-esc="'{0:,.2f}'.format(cost_line['allowance_amount'])"/></td>
+                                            <td class="text-right"><span t-esc="'{0:,.2f}'.format(cost_line['additional_amount'])"/></td>
+                                            <td class="text-right"><span t-esc="'{0:,.2f}'.format(cost_line['transport_amount'])"/></td>
+                                            <td class="text-right"><span t-esc="'{0:,.2f}'.format(cost_line['total_amount'])"/></td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>   
+                    </div>
+                    <div class="footer" style="font-size: 12px;">
+                        <div class="text-center" name="footer_signature">
+                            <div class="row">
+                                <div class="col-4">
+                                    <span>_______________________</span><br/>
+                                </div>
+                                <div class="col-4"/>
+                                <div class="col-4">
+                                    <span>_______________________</span><br/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <strong>ผู้จัดทำ</strong>
+                                </div>
+                                <div class="col-4"/>
+                                <div class="col-4">
+                                    <strong>ผู้อนุมัติ</strong>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <strong>______/______/______</strong>
+                                </div>
+                                <div class="col-4"/>
+                                <div class="col-4">
+                                    <strong>______/______/______</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <record id="action_allowance_delivery_report" model="ir.actions.report">
+            <field name="name">Allowance Delivery (PKP)</field>
+            <field name="model">pkp.transport.shipment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">pkp_transport_management.report_allowance_delivery</field>
+            <field name="report_file">pkp_transport_management.report_allowance_delivery</field>
+            <field name="print_report_name">(object._get_allowance_delivery_report_base_filename())</field>
+            <field name="binding_model_id" eval="False"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="pkp_transport_management.paperformat_pkp_allowance_delivery_report"/>
+        </record>
+
+    </data>
+</odoo>

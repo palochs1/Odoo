@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <!-- Plain QWeb (no website.layout) -->
+  <template id="website_project_task_page_html">
+    <t t-name="website_project.website_project_task_page_html">
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+          <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+          <meta charset="utf-8"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1"/>
+          <link rel="icon" type="image/png" href="https://www.applicadthai.com/wp-content/uploads/2019/05/favicon.png"/>
+          <title>Applicad</title>
+          <style>
+            :root{--muted:#6c757d;--border:#eee;--bg:#fff;--text:#212529}
+            body{
+              margin:0;
+              font-family: 'Noto Sans Thai', sans-serif;
+              color:var(--text);background:#f8f9fa
+            }
+            .container{
+              max-width:1100px;
+              margin:16px auto;
+              padding:0 12px
+            }
+            .row{
+              display:flex;
+              flex-wrap:wrap;
+              gap:8px
+            }
+            .col{
+              flex:1 1 0
+            }
+            .col-7{
+              flex:0 0 58%
+            }
+            .col-5{
+              flex:0 0 40%
+            }
+            @media (max-width:768px){.col-7,.col-5{flex:0 0 100%}}
+
+            h2{
+              margin:0 0 4px 0;
+              font-weight:800
+            }
+            .alert{
+              background:#fff;
+              border:1px solid var(--border);
+              padding:10px 12px;
+              border-radius:8px;
+              margin:10px 0
+            }
+
+            /* form */
+            .form{
+              display:flex;
+              gap:8px
+            }
+            .form input[type="text"]{
+              flex:1;
+              padding:8px 10px;
+              border:1px solid #ddd;
+              border-radius:8px
+            }
+            .btn{
+              padding:8px 12px;
+              border:1px solid #FF3333;   /* ขอบสีเดียวกับปุ่ม */
+              background:#FF3333;
+              color:#fff;
+              border-radius:8px;
+              cursor:pointer;
+            }
+
+            /* เอฟเฟกต์ตอนโฮเวอร์/กด ให้เข้มขึ้นเล็กน้อย */
+            .btn:hover{
+              background:#e62e2e;
+              border-color:#e62e2e;
+            }
+
+            .btn:active{
+              background:#cc2929;
+              border-color:#cc2929;
+            }
+
+            /* โฟกัสด้วยคีย์บอร์ดให้มีเงานิด ๆ */
+            .btn:focus{
+              outline:none;
+              box-shadow:0 0 0 3px rgba(255,51,51,0.25);
+            }
+
+            /* ปุ่มปิดการใช้งาน */
+            .btn:disabled{
+              opacity:.6;
+              cursor:not-allowed;
+            }
+
+
+            /* table */
+              .table-wrap{
+              overflow:auto;
+              background:#fff;
+              border:1px solid var(--border);
+              border-radius:10px;
+            }
+
+            table{
+              width:100%;
+              border-collapse:collapse;
+            }
+
+            thead{
+              background:#FF3333;   /* แดง */
+              color:#fff;           /* ตัวอักษรขาว */
+            }
+
+            thead th{
+              color:#fff;           /* เผื่อธีมไปตั้งสี th ไว้ */
+              font-weight:700;
+            }
+
+            th, td{
+              padding:10px 12px;
+              border-bottom:1px solid var(--border);
+              text-align:left;
+              vertical-align:middle;
+              white-space:nowrap;
+            }
+
+            tbody tr:hover{
+              background:#fafafa;
+            }
+            /* cards (mobile) */
+            .cards{
+              display:none
+            }
+            .card{
+              background:#fff;
+              border:1px solid var(--border);
+              border-radius:10px;
+              margin-bottom:10px
+            }
+            .card-body{
+              padding:12px
+            }
+            .d-flex{
+              display:flex;
+              justify-content:space-between;
+              gap:10px
+            }
+
+            /* badges */
+            .badge{
+              display:inline-block;
+              padding:6px 10px;
+              border-radius:20px;
+              font-size:12px;
+              font-weight:600
+            }
+            .bg-secondary{
+              background:#cfd3d7;  /* เข้มขึ้นจากเดิม */
+              color:#2b2f33;
+              border:1px solid #aeb3b8;
+            }
+            .bg-info{
+              background:#8bd5e6;  /* ฟ้าเข้มขึ้น */
+              color:#063a45;
+              border:1px solid #4fb8cf;
+            }
+            .bg-success{
+              background:#0BDA51;  /* เขียวเข้มขึ้น */
+              color:#0d3f2b;
+              border:1px solid #65b899;
+            }
+            .bg-danger{
+              background:#f0a5ad;  /* แดงชมพูเข้มขึ้น */
+              color:#671722;
+              border:1px solid #de6e7b;
+            }
+            .bg-light{
+              background:#f8f9fa;
+              color:#212529
+            }
+
+            /* responsive switch */
+            @media (max-width:768px){
+              .table-wrap{display:none}
+              .cards{display:block}
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+
+            <!-- Header + Search -->
+            <div class="row" style="margin-bottom:12px">
+              <div class="col col-7">
+                <h2>Task</h2> 
+              </div>
+              <div class="col col-5">
+                <form method="get" class="form">
+                  <input type="text" name="q" t-att-value="q" placeholder="ค้นหา..."/>
+                  <input type="hidden" name="page" value="1"/>
+                  <button class="btn" type="submit">ค้นหา</button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="alert">
+              ทั้งหมด <b><t t-esc="total"/></b> รายการ
+              <t t-if="q"> | ค้นหา: "<t t-esc="q"/>"</t>
+            </div>
+
+            <!-- Table (Desktop) -->
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ชื่อโปรเจค</th>
+                    <th>Customer</th>
+                    <th>Assignees</th>
+                    <th>ระยะเวลา</th>
+                    <th>สถานะ</th>
+                    <th>Task</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="project_task" t-as="p">
+                    <tr>
+                      <td><t t-esc="p.name"/></td>
+                      <td><t t-esc="p.partner_id.name or '-'"/></td>
+                      <t t-set="user_name" t-value="str('')"/>
+                      <t t-set="count_user" t-value="0"/>
+                      <!-- <t t-set="count_user" t-value="len(p.user_ids)"/> -->
+                      <t t-foreach="p.user_ids" t-as="u">
+                        <t t-set="user_name" t-value="user_name + str(u.name)"/>
+                        <t t-if="(count_user+1) &lt; len(p.user_ids)">
+                          <t t-set="user_name" t-value="user_name + str(',')"/>
+                          <t t-set="count_user" t-value="count_user + 1"/>
+                        </t>
+                      </t>
+                      <td><t t-esc="user_name or '-'"/></td>
+                      <td id="confirmed-at-utc">
+                        <t t-if="p.date_deadline">
+                          <t t-esc="p.date_deadline.strftime('%Y-%m-%d')"/>
+                        </t>
+                        <t t-if="not p.date_deadline">-</t>
+                      </td>
+                      <td><t t-esc="p.stage_id.name or '-'"/></td>
+                      <td>
+                        <button type="button" class="btn" style="padding:6px 10px;border-radius:8px"
+                                t-attf-onclick="window.location.href='/project/task/confirm/#{ p.id }/#{ line_uid }/#{ pro_id }'">
+                          ยืนยัน
+                        </button>
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Cards (Mobile) -->
+            <div class="cards">
+              <t t-foreach="project_task" t-as="p">
+                <div class="card">
+                  <div class="card-body">
+                    <!-- ให้แถวนี้ยืดความสูงเท่ากัน -->
+                    <div class="d-flex" style="align-items:stretch;">
+                      <div>
+                        <div style="font-weight:700"><t t-esc="p.name"/></div>
+                        <div class="text-muted" style="font-size:12px">
+                          Customer: <t t-esc="p.partner_id.name or '-'"/>
+                        </div>
+                        <div class="text-muted" style="font-size:12px">
+                          <t t-set="user_name" t-value="str('')"/>
+                            <t t-set="count_user" t-value="0"/>
+                            <!-- <t t-set="count_user" t-value="len(p.user_ids)"/> -->
+                            <t t-foreach="p.user_ids" t-as="u">
+                              <t t-set="user_name" t-value="user_name + str(u.name)"/>
+                              <t t-if="(count_user+1) &lt; len(p.user_ids)">
+                                <t t-set="user_name" t-value="user_name + str(',')"/>
+                                <t t-set="count_user" t-value="count_user + 1"/>
+                              </t>
+                            </t>
+                          Assignees: <t t-esc="user_name or '-'"/>
+                        </div>
+                        <div id="confirmed-at-utc" class="text-muted" style="font-size:12px">
+                          ระยะเวลา:
+                          <t t-if="p.date_deadline">
+                            <t t-esc="p.date_deadline.strftime('%Y-%m-%d')"/>
+                          </t>
+                          <t t-if="not p.date_deadline">-</t>
+                        </div>
+                      </div>
+
+                      <!-- คอลัมน์ขวา: ทำเป็นคอลัมน์แนวตั้ง + ชิดขวา + ดันปุ่มไปล่าง -->
+                      <div style="margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; min-width:120px;">
+  
+                        <!-- แสดงค่า state -->
+                        <span t-esc="p.stage_id.name or '-'" 
+                              style="font-size:12px; color:#6c757d; margin-bottom:6px;"/>
+
+                        <!-- ปุ่ม -->
+                        <button type="button" class="btn"
+                                style="padding:6px 10px;border-radius:8px"
+                                t-attf-onclick="window.location.href='/project/task/confirm/#{ p.id }/#{ line_uid }/#{ pro_id }'">
+                          ยืนยัน
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </t>
+            </div>
+          </div>
+          <script>
+            // เปลี่ยนวันที่ UTC เป็นเวลาท้องถิ่น
+            document.querySelectorAll('#confirmed-at-utc').forEach(function(el){
+              var text = el.textContent.trim();
+              if (!text) return;
+              var dt = new Date(text + ' UTC');
+              if (isNaN(dt.getTime())) return;
+              var y = dt.getFullYear();
+              var m = ('0' + (dt.getMonth()+1)).slice(-2);
+              var d = ('0' + dt.getDate()).slice(-2);
+              var h = ('0' + dt.getHours()).slice(-2);
+              var i = ('0' + dt.getMinutes()).slice(-2);
+              el.textContent = y + '-' + m + '-' + d + ' ' + h + ':' + i;
+            });
+          </script>
+        </body>
+      </html>
+    </t>
+  </template>
+
+  <template id="website_project_task_page_confirm">
+    <t t-name="website_project.website_project_task_page_confirm">
+      <html>
+        <head>
+          <meta charset="utf-8"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+          <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+          <title>Applicad</title>
+          <style>
+            :root{ 
+              --primary:#e74d4d; 
+              --primary-600:#d34141;
+               --muted:#6b8792; 
+               --stroke:#e9eef2; 
+            }
+            .wrap{
+              max-width:760px;
+              margin:24px auto;
+              padding:0 16px;
+              font-family:'Noto Sans Thai',Arial,Helvetica,sans-serif
+            }
+            .title{
+              margin:0 0 8px;
+              font-weight:900;
+              font-size:clamp(24px,5vw,40px);
+              letter-spacing:.2px;
+              color:#0f172a
+            }
+            .muted{
+              color:#6b8792;xx
+              margin:0 0 16px;
+              font-size:clamp(14px,2.6vw,18px)
+            }
+            .seg{
+              display:flex;
+              gap:12px;
+              margin:10px 0 18px
+            }
+            .seg input[type="radio"]{
+              position:absolute;
+              opacity:0;   /* ซ่อน radio ปกติ */
+            }
+            .seg .seg-btn{
+              flex:1;
+              text-align:center;
+              padding:14px 12px;
+              border-radius:14px;
+              font-weight:800;
+              font-size:16px;
+              border:1px solid var(--stroke);
+              background:#f7f7f8;
+              color:#94a3b8;
+              cursor:pointer;
+              transition: all 0.2s ease-in-out; /* ทำให้เปลี่ยนสีลื่นขึ้น */
+            }
+            .seg input[type="radio"]:checked + .seg-btn {
+              background:#007bff;
+              color:#fff;
+              border-color:#007bff;
+            }
+            label.field{
+              display:block;
+              font-weight:800;
+              margin:0 0 8px;
+              color:#0f172a
+            }
+            .text-input{
+              width:100%;
+              padding:12px 14px;
+              border:1px solid var(--stroke);
+              border-radius:12px;
+              outline:none;
+              font-size:16px
+            }
+            .hint{
+              margin-top:6px;
+              color:#6b8792;
+              font-size:13px
+            }
+            .upload{
+              display:inline-flex;
+              align-items:center;
+              gap:10px;padding:12px 14px;
+              border-radius:12px;
+              border:1px solid var(--stroke);
+              background:#fff;
+              box-shadow:0 4px 10px rgba(15,23,42,.06);
+              font-weight:800;
+              cursor:pointer
+            }
+            .preview{
+              max-width:100%;
+              margin-top:10px;
+              border:1px solid var(--stroke);
+              border-radius:12px;
+              display:none
+            }
+            .actions{
+              display:flex;
+              gap:12px;
+              flex-wrap:wrap;
+              margin-top:18px
+            }
+            .x-remove { 
+              display: none; 
+              margin-top: 6px; 
+            }
+            .btn{
+              border-radius:14px
+              ;padding:14px 16px;
+              font-weight:800;
+              font-size:16px;
+              cursor:pointer;
+              border:0
+            }
+            .btn-primary{
+              background:var(--primary);
+              color:#fff
+            }
+            .btn-primary:active{
+              background:var(--primary-600)
+            }
+            .btn-light{
+              background:#eef2f7;color:#0f172a
+            }
+            .sr-only{
+              position:absolute;
+              width:1px;
+              height:1px;
+              padding:0;
+              margin:-1px;
+              overflow:hidden;
+              clip:rect(0,0,0,0);
+              white-space:nowrap;
+              border:0
+            }
+          </style>
+        </head>
+
+        <body>
+          <div class="wrap">
+            <h2 class="title">ยืนยัน</h2>
+            <p class="muted">ชื่องาน: <b><t t-esc="task.name"/></b></p>
+
+            <form method="post" action="/project/task/confirm/submit" enctype="multipart/form-data" id="confirmForm">
+              <input type="hidden" name="task" t-att-value="task.id"/>
+              <input type="hidden" name="line_uid" t-att-value="line_uid" id="line_uid"/>
+              <input type="hidden" name="pro_id" t-att-value="project.id" id="pro_id"/>
+
+              <div class="seg">
+                <t t-foreach="stages" t-as="stage">
+                  <input type="radio"
+                        t-att-id="'st_%s' % stage.id"
+                        name="stage_id"
+                        t-att-value="stage.id"
+                        t-att-checked="stage.id == task.stage_id.id"/>
+                  <label t-att-for="'st_%s' % stage.id" class="seg-btn">
+                    <t t-esc="stage.name"/>
+                  </label>
+                </t>
+              </div>
+
+              <div class="actions">
+                <button type="submit" class="btn btn-primary">บันทึกการยืนยัน</button>
+                <button type="button" class="btn btn-light"
+                        t-attf-onclick="window.location.href='/website/project/task/#{ line_uid }/#{ project.id }'">
+                  กลับ
+                </button>
+              </div>
+            </form>
+
+            <!-- <p class="hint" style="margin-top:12px">ระบบจะพยายามดึงพิกัดปัจจุบันอัตโนมัติ (latitude/longitude)</p> -->
+          </div>
+
+          <script>
+          <!-- (function(){
+            // Geolocation
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(function(pos){
+                document.getElementById('latitude').value  = pos.coords.latitude.toString();
+                document.getElementById('longitude').value = pos.coords.longitude.toString();
+              }, function(err){
+                console.warn('geolocation error', err);
+              }, {enableHighAccuracy:true, timeout:7000, maximumAge:0});
+            }
+
+            // Preview image + remove
+            const fileInput = document.getElementById('check_image');
+            const preview = document.getElementById('proof_preview');
+            const btnRemove = document.getElementById('btn_remove');
+
+            if (btnRemove) btnRemove.style.display = 'none';
+
+            if (fileInput) {
+              fileInput.addEventListener('change', function(e){
+                const file = e.target.files &amp;&amp; e.target.files[0];
+                if (!file) { preview.style.display='none'; btnRemove.style.display='none'; return; }
+                const reader = new FileReader();
+                reader.onload = function(ev){
+                  preview.src = ev.target.result;
+                  preview.style.display='block';
+                  btnRemove.style.display='inline-block';
+                };
+                reader.readAsDataURL(file);
+              });
+            }
+            if (btnRemove) {
+              btnRemove.addEventListener('click', function(){
+                fileInput.value = '';
+                preview.src = '';
+                preview.style.display='none';
+                btnRemove.style.display='none';
+              });
+            }
+          })(); -->
+          <!-- document.getElementById("confirmForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            let myVar = document.getElementById("line_uid").value;  
+            console.log("line_uid:", myVar);
+            let url = window.origin + "/delivery-orders/" + myVar;
+            window.location.href = url;
+          }); -->
+          </script>
+        </body>
+      </html>
+    </t>
+  </template>
+</odoo>

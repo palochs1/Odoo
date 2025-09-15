@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="report_allowance_person">
+            <t t-call="web.html_container">
+                <t t-call="web.basic_layout">
+                    <div class="header">
+                        <div class="text-center">
+                            <t t-set="header_font_color" t-value="'color: %s;' % company.primary_color"/>
+                            <h5><span t-att-style="header_font_color"/>ค่าเบี้ยเลี้ยงค้างจ่ายรายคน</h5>
+                        </div>
+                        <div class="text-center">
+                            <span>วันที่ </span><span t-esc="start_date"/><span> ถึง วันที่ </span><span t-esc="end_date"/>
+                        </div>
+                    </div>
+                    <div class="page">
+                        <table class="table table-sm table-bordered" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th name="th_name" class="text-center" style="width:60%;"><span>ชื่อ</span></th>
+                                    <th name="th_shipment_name" class="text-center" style="width:20%;"><span>หมายเลขจัดส่ง</span></th>
+                                    <th name="th_delivery_date" class="text-center" style="width:10%;" ><span>วันที่</span></th>
+                                    <th name="th_amount" class="text-center" style="width:10%;"><span>ค่าเบี้ยเลี้ยงรวม</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="lines" t-value="func_employee_group_by(docs)"/>
+                                <t t-foreach="lines" t-as="line">
+                                    <tr style="background-color: #e9ecef;">
+                                        <td class="text-left"><span t-esc="line['name']"/></td>
+                                        <td class="text-center" />
+                                        <td class="text-center" />
+                                        <td class="text-right"><span t-esc="'{0:,.2f}'.format(line['employee_total_amount'])"/></td>
+                                    </tr>
+                                    <t t-foreach="line['cost_lines']" t-as="cost_line">
+                                        <tr>
+                                            <td class="text-center"/>
+                                            <td class="text-left"><span t-esc="cost_line['shipment_name']"/></td>
+                                            <td class="text-center"><span t-esc="cost_line['delivery_date'].strftime('%d/%m/%Y')"/></td>
+                                            <td class="text-right"><span t-esc="'{0:,.2f}'.format(cost_line['amount'])"/></td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>   
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <record id="action_allowance_person_report" model="ir.actions.report">
+            <field name="name">Allowance Person (PKP)</field>
+            <field name="model">pkp.transport.shipment.employee.cost.line</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">pkp_transport_management.report_allowance_person</field>
+            <field name="report_file">pkp_transport_management.report_allowance_person</field>
+            <field name="print_report_name">(object._get_allowance_person_report_base_filename())</field>
+            <field name="binding_model_id" eval="False"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="pkp_transport_management.paperformat_pkp_allowance_person_report"/>
+        </record>
+
+    </data>
+</odoo>

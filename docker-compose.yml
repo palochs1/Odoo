@@ -1,0 +1,88 @@
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: odoo15_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo} -d ${POSTGRES_DB:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # NEW: ดึง/อัปเดตโค้ด addons จาก GitHub ใส่ลง named volume
+  addons:
+    image: alpine/git:latest
+    container_name: odoo15_addons_git
+    environment:
+      GIT_URL: ${GIT_URL}
+      GIT_BRANCH: ${GIT_BRANCH:-main}
+      CHOWN_TO: "101:101"                     # uid:gid ของ user odoo ในอิมเมจทางการ
+      PULL_INTERVAL: ${GIT_PULL_INTERVAL_SECONDS:-60}
+    volumes:
+      - addons_git:/repo
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        if [ -d /repo/.git ]; then
+          git -C /repo fetch --all --prune
+          git -C /repo checkout "${GIT_BRANCH}"
+          git -C /repo reset --hard "origin/${GIT_BRANCH}"
+        else
+          git clone --branch "${GIT_BRANCH}" --depth 1 "${GIT_URL}" /repo
+        fi
+        chown -R ${CHOWN_TO} /repo || true
+        # ดึงโค้ดซ้ำเป็นระยะ
+        while true; do
+          sleep ${PULL_INTERVAL:-60}
+          git -C /repo fetch --all --prune || true
+          git -C /repo reset --hard "origin/${GIT_BRANCH}" || true
+          chown -R ${CHOWN_TO} /repo || true
+          echo "[addons] pulled at $(date)"
+        done
+    restart: unless-stopped
+
+  odoo:
+    image: odoo:15
+    platform: linux/amd64
+    container_name: odoo15_app
+    depends_on:
+      db:
+        condition: service_healthy
+      addons:
+        condition: service_started
+    ports:
+      - "${ODOO_PORT:-8069}:8069"
+    volumes:
+      # เปลี่ยนจาก ./addons เป็น named volume ที่ service addons เขียนให้
+      - addons_git:/mnt/extra-addons
+      - ./data/odoo:/var/lib/odoo
+    command:
+      [
+        "odoo",
+        "--db_host=db",
+        "--db_port=5432",
+        "--db_user=${POSTGRES_USER:-odoo}",
+        "--db_password=${POSTGRES_PASSWORD:-odoo}",
+        "--addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons",
+        "--logfile=/var/lib/odoo/odoo.log"
+      ]
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:-odoo}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      PGDATABASE: ${POSTGRES_DB:-postgres}
+    restart: unless-stopped
+
+volumes:
+  addons_git:

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+	<record id="product_category_form_view_inherit_pkp_inventory" model="ir.ui.view">
+        <field name="name">product.category.form.view.inherit.pkp.inventory</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+
+	        <xpath expr="//field[@name='parent_id']" position="before">
+                <field name="code" class="oe_inline"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

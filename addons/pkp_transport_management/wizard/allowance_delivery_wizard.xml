@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+    	<record id="view_pkp_allowance_delivery_wizard" model="ir.ui.view">
+            <field name="name">view.pkp.allowance.delivery.wizard</field>
+            <field name="model">pkp.allowance.delivery.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Allowance Delivery Wizard">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="date" required="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="License Plates">
+                                <field name="license_plate_ids">
+                                    <tree>
+                                        <field name="license_plate"/>
+                                        <field name="model_id"/>
+                                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="license_plate"/>
+                                                <field name="model_id"/>
+                                                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                            </group>
+                                         </group>                                                                     
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button name="print_report" string="Print Report" type="object" class="oe_highlight"/>
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    	<record id="action_pkp_allowance_delivery_wizard" model="ir.actions.act_window">
+            <field name="name">Allowance Delivery Wizard</field>
+            <field name="res_model">pkp.allowance.delivery.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_pkp_allowance_delivery_wizard"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_allowance_delivery" 
+            name="Allowance Deliveries" 
+            action="action_pkp_allowance_delivery_wizard"
+            parent="menu_transport_reporting" 
+            sequence="3"/>
+
+    </data>
+</odoo>

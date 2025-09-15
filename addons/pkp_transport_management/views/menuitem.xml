@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <menuitem name="Transport"
+            id="menu_transport_management_root"
+            web_icon="pkp_transport_management,static/description/icon.png"
+            sequence="100"/>
+
+        <menuitem id="menu_operation" 
+            name="Operations" 
+            parent="menu_transport_management_root" 
+            sequence="10"/>
+
+        <menuitem id="menu_transporters" 
+            name="Transporters" 
+            parent="menu_transport_management_root" 
+            sequence="15"/>
+
+        <menuitem id="menu_transport_reporting" 
+            name="Reporting" 
+            parent="menu_transport_management_root" 
+            sequence="20"
+            groups="pkp_transport_management.group_transport_manager"/>
+
+        <menuitem id="menu_transport_configuration" 
+            name="Configuration" 
+            parent="menu_transport_management_root"
+            sequence="40"
+            groups="pkp_transport_management.group_transport_manager"/>
+
+    </data>
+</odoo>

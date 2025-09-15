@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Product -->
+    <record id="product_normal_form_view_inherit_pkp_inventory" model="ir.ui.view">
+		<field name="name">product.normal.form.view.inherit.pkp.inventory</field>
+		<field name="model">product.product</field>
+		<field name="inherit_id" ref="product.product_normal_form_view"/>
+		<field name="arch" type="xml">
+
+			<xpath expr="//field[@name='company_id']" position="before">
+				<field name="product_low_stock_min_quantity" string="Variant Min Quantity"/>
+				<field name="product_low_stock_reorder_min_quantity" invisible="1"/>
+			</xpath>
+
+		</field>
+	</record>
+
+    <!-- Product Template -->
+    <record id="product_template_form_view_inherit_pkp_inventory" model="ir.ui.view">
+		<field name="name">product.template.form.view.inherit.pkp.inventory</field>
+		<field name="model">product.template</field>
+		<field name="inherit_id" ref="product.product_template_form_view"/>
+		<field name="arch" type="xml">
+			
+			<xpath expr="//field[@name='company_id']" position="before">
+				<field name="template_low_stock_min_quantity" string="Product Min Quantity"/>
+				<field name="template_low_stock_reorder_min_quantity" invisible="1"/>
+			</xpath>
+				
+		</field>
+	</record>
+
+    <record id="product_template_only_form_view_inherit_pkp_inventory" model="ir.ui.view">
+        <field name="name">product.template.only.form.view.inherit.pkp.inventory</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view" />
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='default_code']" position="before">
+                <field name="cd_code"/>
+            </xpath>
+            
+        </field>
+    </record>
+
+</odoo>

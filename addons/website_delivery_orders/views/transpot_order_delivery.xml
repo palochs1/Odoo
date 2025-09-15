@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+<template id="transpot_delivery_orders_page_html">
+    <t t-name="website_delivery_orders.transpot_delivery_orders_page_html">
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+          <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+          <meta charset="utf-8"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1"/>
+          <link rel="icon" type="image/png" href="https://www.applicadthai.com/wp-content/uploads/2019/05/favicon.png"/>
+          <title>Applicad</title>
+          <style>
+            :root{--muted:#6c757d;--border:#eee;--bg:#fff;--text:#212529}
+            body{
+              margin:0;
+              font-family: 'Noto Sans Thai', sans-serif;
+              color:var(--text);background:#f8f9fa
+            }
+            .container{
+              max-width:1100px;
+              margin:16px auto;
+              padding:0 12px
+            }
+            .row{
+              display:flex;
+              flex-wrap:wrap;
+              gap:8px
+            }
+            .col{
+              flex:1 1 0
+            }
+            .col-7{
+              flex:0 0 58%
+            }
+            .col-5{
+              flex:0 0 40%
+            }
+            @media (max-width:768px){.col-7,.col-5{flex:0 0 100%}}
+
+            h2{
+              margin:0 0 4px 0;
+              font-weight:800
+            }
+            .alert{
+              background:#fff;
+              border:1px solid var(--border);
+              padding:10px 12px;
+              border-radius:8px;
+              margin:10px 0
+            }
+
+            /* form */
+            .form{
+              display:flex;
+              gap:8px
+            }
+            .form input[type="text"]{
+              flex:1;
+              padding:8px 10px;
+              border:1px solid #ddd;
+              border-radius:8px
+            }
+            .btn{
+              padding:8px 12px;
+              border:1px solid #FF3333;   /* ขอบสีเดียวกับปุ่ม */
+              background:#FF3333;
+              color:#fff;
+              border-radius:8px;
+              cursor:pointer;
+            }
+
+            /* เอฟเฟกต์ตอนโฮเวอร์/กด ให้เข้มขึ้นเล็กน้อย */
+            .btn:hover{
+              background:#e62e2e;
+              border-color:#e62e2e;
+            }
+
+            .btn:active{
+              background:#cc2929;
+              border-color:#cc2929;
+            }
+
+            /* โฟกัสด้วยคีย์บอร์ดให้มีเงานิด ๆ */
+            .btn:focus{
+              outline:none;
+              box-shadow:0 0 0 3px rgba(255,51,51,0.25);
+            }
+
+            /* ปุ่มปิดการใช้งาน */
+            .btn:disabled{
+              opacity:.6;
+              cursor:not-allowed;
+            }
+
+
+            /* table */
+              .table-wrap{
+              overflow:auto;
+              background:#fff;
+              border:1px solid var(--border);
+              border-radius:10px;
+            }
+
+            table{
+              width:100%;
+              border-collapse:collapse;
+            }
+
+            thead{
+              background:#FF3333;   /* แดง */
+              color:#fff;           /* ตัวอักษรขาว */
+            }
+
+            thead th{
+              color:#fff;           /* เผื่อธีมไปตั้งสี th ไว้ */
+              font-weight:700;
+            }
+
+            th, td{
+              padding:10px 12px;
+              border-bottom:1px solid var(--border);
+              text-align:left;
+              vertical-align:middle;
+              white-space:nowrap;
+            }
+
+            tbody tr:hover{
+              background:#fafafa;
+            }
+            /* cards (mobile) */
+            .cards{
+              display:none
+            }
+            .card{
+              background:#fff;
+              border:1px solid var(--border);
+              border-radius:10px;
+              margin-bottom:10px
+            }
+            .card-body{
+              padding:12px
+            }
+            .d-flex{
+              display:flex;
+              justify-content:space-between;
+              gap:10px
+            }
+
+            /* badges */
+            .badge{
+              display:inline-block;
+              padding:6px 10px;
+              border-radius:20px;
+              font-size:12px;
+              font-weight:600
+            }
+            .bg-secondary{
+              background:#cfd3d7;  /* เข้มขึ้นจากเดิม */
+              color:#2b2f33;
+              border:1px solid #aeb3b8;
+            }
+            .bg-info{
+              background:#8bd5e6;  /* ฟ้าเข้มขึ้น */
+              color:#063a45;
+              border:1px solid #4fb8cf;
+            }
+            .bg-success{
+              background:#0BDA51;  /* เขียวเข้มขึ้น */
+              color:#0d3f2b;
+              border:1px solid #65b899;
+            }
+            .bg-danger{
+              background:#f0a5ad;  /* แดงชมพูเข้มขึ้น */
+              color:#671722;
+              border:1px solid #de6e7b;
+            }
+            .bg-light{
+              background:#f8f9fa;
+              color:#212529
+            }
+
+            /* responsive switch */
+            @media (max-width:768px){
+              .table-wrap{display:none}
+              .cards{display:block}
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+
+            <!-- Header + Search -->
+            <div class="row" style="margin-bottom:12px">
+              <div class="col col-7">
+                <h2>Transport</h2>
+              </div>
+              <div class="col col-5">
+                <form method="get" class="form">
+                  <input type="text" name="q" t-att-value="q" placeholder="ค้นหา..."/>
+                  <input type="hidden" name="page" value="1"/>
+                  <button class="btn" type="submit">ค้นหา</button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="alert">
+              ทั้งหมด <b><t t-esc="total"/></b> รายการ
+              <t t-if="q"> | ค้นหา: "<t t-esc="q"/>"</t>
+            </div>
+
+            <!-- Table (Desktop) -->
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>เลขที่</th>
+                    <th>License Plate</th>
+                    <th>ผู้ขับ</th>
+                    <th>กำหนดส่ง</th>
+                    <th>สถานะ</th>
+                    <th>ยืนยัน</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="transports" t-as="p">
+                    <tr>
+                      <td><t t-esc="p.name"/></td>
+                      <td><t t-esc="p.license_plate_id.name or '-'"/></td>
+                      <td><t t-esc="p.driver_id.name or '-'"/></td>
+                      <td id="confirmed-at-utc">
+                        <t t-if="p.delivery_date">
+                          <t t-esc="p.delivery_date.strftime('%Y-%m-%d %H:%M')"/>
+                        </t>
+                        <t t-if="not p.delivery_date">-</t>
+                      </td>
+                      <!-- <td><t t-esc="p.location_dest_id and p.location_dest_id.display_name or '-'"/></td> -->
+                      <td>
+                       <t t-set="state" t-value="p.state"/>
+                        <span t-attf-class="badge #{ 'bg-secondary' if state in 'draft' else
+                                                      'bg-info'     if state in 'arranging' else
+                                                      'bg-info'     if state in 'in_transit' else
+                                                      'bg-info'     if state == 'arrived' else
+                                                      'bg-success'   if state == 'done' else 'bg-light' }">
+                          <t t-esc="{
+                              'draft': 'Draft',
+                              'arranging': 'Arranging',
+                              'in_transit': 'In Transit',
+                              'arrived': 'Arrived',
+                              'done': 'Done'
+                          }.get(state, state)"/>
+                        </span>
+                      </td>
+                      <td>
+                        <button type="button" class="btn" style="padding:6px 10px;border-radius:8px"
+                                t-attf-onclick="window.location.href='/picking/delivery-orders/#{ line_uid }/#{ p.id }'">
+                            เพิ่มเติม 
+                        </button>
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Cards (Mobile) -->
+            <div class="cards">
+              <t t-foreach="transports" t-as="p">
+                <div class="card">
+                  <div class="card-body">
+                    <!-- ให้แถวนี้ยืดความสูงเท่ากัน -->
+                    <div class="d-flex" style="align-items:stretch;">
+                      <div>
+                        <div style="font-weight:700"><t t-esc="p.name"/></div>
+                        <div class="text-muted" style="font-size:12px">
+                          เลขที่: <t t-esc="p.name or '-'"/>
+                        </div>
+                        <div class="text-muted" style="font-size:12px">
+                          License Plate: <t t-esc="p.license_plate_id.name or '-'"/>
+                        </div>
+                        <div class="text-muted" style="font-size:12px">
+                          ผู้ขับ: <t t-esc="p.driver_id.name"/>
+                        </div>
+                        <div id="confirmed-at-utc" class="text-muted" style="font-size:12px">
+                          กำหนดส่ง: 
+                          <t t-if="p.delivery_date">
+                            <t t-esc="p.delivery_date.strftime('%Y-%m-%d %H:%M')"/>
+                          </t>
+                          <t t-if="not p.delivery_date">-</t>
+                        </div>
+                      </div>
+                      <div style="margin-left:auto; display:flex; flex-direction:column; align-items:flex-end;">
+                        <t t-set="state" t-value="p.state"/>
+                        <span t-attf-class="badge #{ 'bg-secondary' if state in 'draft' else
+                                                      'bg-info'     if state in 'arranging' else
+                                                      'bg-info'     if state in 'in_transit' else
+                                                      'bg-info'     if state == 'arrived' else
+                                                      'bg-success'   if state == 'done' else 'bg-light' }">
+                          <t t-esc="{
+                              'draft': 'Draft',
+                              'arranging': 'Arranging',
+                              'in_transit': 'In Transit',
+                              'arrived': 'Arrived',
+                              'done': 'Done'
+                          }.get(state, state)"/>
+                        </span>
+
+                        <!-- ตัวดันพื้นที่ว่างให้ปุ่มลงล่าง -->
+                        <div style="flex:1;"></div>
+
+                        <!-- ปุ่มที่มุมขวาล่างของคอลัมน์ขวา -->
+                        <button type="button" class="btn"
+                                style="padding:6px 10px;border-radius:8px"
+                                 t-attf-onclick="window.location.href='/picking/delivery-orders/#{ line_uid }/#{ p.id }'">
+                            เพิ่มเติม 
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </t>
+            </div>
+          </div>
+        </body>
+        <script>
+            // เปลี่ยนวันที่ UTC เป็นเวลาท้องถิ่น
+            document.querySelectorAll('#confirmed-at-utc').forEach(function(el){
+                var text = el.textContent.trim();
+                if (!text) return;
+                var dt = new Date(text + ' UTC');
+                if (isNaN(dt.getTime())) return;
+                var y = dt.getFullYear();
+                var m = ('0' + (dt.getMonth()+1)).slice(-2);
+                var d = ('0' + dt.getDate()).slice(-2);
+                var h = ('0' + dt.getHours()).slice(-2);
+                var i = ('0' + dt.getMinutes()).slice(-2);
+                el.textContent = y + '-' + m + '-' + d + ' ' + h + ':' + i;
+            });
+        </script>
+      </html>
+    </t>
+  </template>
+
+</odoo>
