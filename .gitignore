@@ -1,4 +1,21 @@
+# macOS
+.DS_Store
+
+# Python / Node (เผื่อมี)
+__pycache__/
+*.pyc
+node_modules/
+
+# Docker data (อย่าดันขึ้น)
+data/
+backups/
+
+# Env/Secrets
+.env
+*.env
+
+# Logs / dumps
+*.log
 *.dump
 *.dump.gz
 *.sql
-.env
